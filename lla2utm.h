@@ -10,40 +10,49 @@ class lla2utm_converter
 {
     private:
     // Conversion Variables
+    // Earth Parameters
     double a;
+    double f;
     double b;
-    double flat;
     double e;
-    double e_ps;
     double n;
-    double C1;
-    double C2;
-    double C3;
-    double C4;
-    double C5;
-    double C6;
     double K0;
-    double rho;
-    double nu;
-    double P;
-    double S;
-    double K1;
-    double K2;
-    double K3;
-    double K4;
-    double K5;
-    double lon0;
 
-    std::vector<int> boundaries;
-    std::vector<int> central_meridians;
+    // Constants
+    double X0;
+    double Y0;
+    double L0;
+    
+    // Powers of e
+    double e2;
+    double e4;
+    double e6;
+    double e8;
+
+    // Cofficients
+    double c1;
+    double c2;
+    double c3;
+    double c4;
+    double c5;
+
+    // Other Variables
+    double L;
+    double z_e;
+    double z_n;
+    double Z_e;
+    double Z_n;
 
     // Inputs and Outputs
-    double northing;
+    double lat_deg;
+    double lon_deg;
+    double lat_rad;
+    double lon_rad;
     double easting;
-    double grid_zone;
-    double lat;
-    double lon;
+    double northing;
+    int grid_zone;
 
+    // For returning the function
     std::vector<double> outputs;
 
     // Utility Functions
@@ -56,9 +65,9 @@ class lla2utm_converter
         //central_meridians.clear();
         while (key)
         {
-            if(lon<bound)
+            if(lon_deg<bound)
             {
-                lon0 = bound - 3;
+                L0 = bound - 3;
                 grid_zone = i;
                 key = false;
             }
@@ -72,27 +81,34 @@ class lla2utm_converter
         }
     }
 
+    void set_ceofs()
+    {
+        c1 = (-175.0/16384.0)*e8 + (-5.0/256.0)*e6 + (-3.0/64.0)*e4 + (-1.0/4.0)*e2 + 1;
+        c2 = (-901.0/184320.0)*e8 + (-9.0/1024.0)*e6 + (-1.0/96.0)*e4 + (1.0/8.0)*e2;
+        c3 = (-311.0/737280.0)*e8 + (17.0/5120.0)*e6 + (13.0/768.0)*e4;
+        c4 = (899.0/430080.0)*e8 + (61.0/15360.0)*e6;
+        c5 = (49561.0/41287680.0)*e8;
+    }
+
     public:
     lla2utm_converter()
     {
         a = 6378137.0;
-        b = 6356752.3142;
-
-        flat = (a-b)/a;
-        e = sqrt(1-(pow(b,2))/(pow(a,2)));
-        e_ps = pow(e,2)/(1-(pow(e,2)));
-
-        n = (a-b)/(a+b);
-
-        C1 = 1.0 + 3.0/4.0*pow(e,2) + 45.0/64.0*pow(e,4) + 175.0/256.0*pow(e,6) + 11025.0/16384.0*pow(e,8) + 43659.0/65536.0*pow(e,10);
-        C2 = 3.0/4.0*pow(e,2) + 15.0/16.0*pow(e,4) + 525.0/512.0*pow(e,6) + 2205.0/2048.0*pow(e,8) + 72765.0/65536.0*pow(e,10);
-        C3 = 15.0/64.0*pow(e,4) + 105.0/256.0*pow(e,6) + 2205.0/4096.0*pow(e,8) + 10395.0/16384.0*pow(e,10);
-        C4 = 35.0/512.0*pow(e,6) + 315.0/2048.0*pow(e,8) + 31185.0/131072.0*pow(e,10);
-        C5 = 315.0/16384.0*pow(e,8) + 3465.0/65536.0*pow(e,10);
-        C6 = 693.0/131072.0*pow(e,10);   
-        
+        f = 298.257223563;
+        b = a * (1-1/f);
         K0 = 0.9996;
+        X0 = 500000;
+
+        e = sqrt((a*a-b*b)/(a*a));
         
+        e2 = pow(e,2);
+        e4 = pow(e,4);
+        e6 = pow(e,6);
+        e8 = pow(e,8);
+
+        n = a*K0;
+
+        set_ceofs();       
     }
     
     ~lla2utm_converter()
@@ -102,34 +118,33 @@ class lla2utm_converter
 
     std::vector<double> convert(double lat_in, double lon_in)
     {
-        lat = lat_in;
-        lon = lon_in;
+        lat_deg = lat_in;
+        lon_deg = lon_in;
+
+        if(lat_deg<0)
+        {
+            Y0 = 10000000;
+        }
+        else
+        {
+            Y0 = 0;
+        }
 
         calc_gz();
         
-        lon = lon_in * M_PI / 180.0;
-        lat = lat_in * M_PI / 180.0;
-        lon0 = lon0 * M_PI / 180.0;
+        lon_rad = lon_in * M_PI / 180.0;
+        lat_rad = lat_in * M_PI / 180.0;
+        L0 = L0 * M_PI / 180.0;
 
-        rho = (a*(1.0-pow(e,2.0)))/pow((1.0-pow(e,2.0)*pow(sin(lat),2.0)),(3.0/2.0));
-        nu = a/pow((1.0-pow(e,2.0)*pow(sin(lat),2.0)),(1.0/2.0));
+        L = log(tan(M_PI/4+lat_rad/2)*(pow(((1-e*sin(lat_rad))/(1+e*sin(lat_rad))),(e/2))));
+        z_e = log(tan(M_PI/4 + asin(sin(lon_rad - L0)/cosh(L))/2));
+        z_n = atan(sinh(L)/cos(lon_rad - L0));
 
-        P = lon-lon0;
-        S = a*(1.0-pow(e,2.0))*(C1*lat - C2*sin(2.0*lat)/2.0 + C3*sin(4.0*lat)/4.0 - C4*sin(6.0*lat)/6.0 + C5*sin(8.0*lat)/8.0 - C6*sin(10.0*lat)/10.0);
+        Z_e = n*c1*z_e + n*(c2*cos(2*z_n)*sinh(2*z_e) + c3*cos(4*z_n)*sinh(4*z_e) + c4*cos(6*z_n)*sinh(6*z_e) + c5*cos(8*z_n)*sinh(8*z_e));
+        Z_n = n*c1*z_n + n*(c2*sin(2*z_n)*cosh(2*z_e) + c3*sin(4*z_n)*cosh(4*z_e) + c4*sin(6*z_n)*cosh(6*z_e) + c5*sin(8*z_n)*cosh(8*z_e));
 
-        K1 = S*K0;
-        K2 = K0*nu*sin(lat)*cos(lat)/2.0;
-        K3 = ((K0*nu*sin(lat)*pow(cos(lat),3.0))/24.0)*(5.0-pow(tan(lat),2.0)+9.0*e_ps*pow(cos(lat),2.0)+pow((2.0*e_ps*pow(cos(lat),2.0)),2.0));
-        K4 = K0*nu*cos(lat);
-        K5 = ((K0*nu*pow(cos(lat),3.0))/6.0)*(1.0-pow(tan(lat),2.0)+e_ps*pow(cos(lat),2.0));
-        northing = K1 + K2*pow(P,2.0) + K3*pow(P,4.0);
-        easting = K4*P + K5*pow(P,3.0);
-
-        if(lat<0)
-        {
-            northing+=10000000.0;
-        }
-        easting += 500000.0;
+        easting = Z_e + X0;
+        northing = Z_n + Y0;
 
         outputs.clear();
         outputs.push_back(easting);
