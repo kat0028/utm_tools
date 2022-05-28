@@ -5,8 +5,14 @@
 // LOOKUP TABLES FOR MGRS
 // ------------------------------------------------------------------------------------------
 
-std::string lookup_easting(int remain, int easting)
+// UTM to MGRS
+std::string lookup_easting(double easting_in, int grid_zone_in)
 {
+    int remain;
+    remain = grid_zone_in % 3;
+
+    int easting;
+    easting = trunc(easting_in/100000);
 
     if (remain == 1)
     {
@@ -116,8 +122,15 @@ std::string lookup_easting(int remain, int easting)
     return "easting not found";
 }
 
-std::string lookup_northing(int remain, int northing)
+std::string lookup_northing(double northing_in, int grid_zone_in)
 {
+    int remain;
+    remain = grid_zone_in % 2;
+    
+    int northing;
+    northing = trunc(northing_in);
+    northing = floor((northing % 2000000)/100000);
+
     if (remain == 1)
     {
         if (northing == 0)
@@ -377,6 +390,280 @@ std::string lookup_gridzone(int latitude)
     {
         return "NA";
     }
+}
+
+// MGRS to UTM
+double decode_false_easting(std::string false_easting)
+{
+    if (false_easting == "A")
+    {
+        return 1.0;
+    }
+    else if (false_easting == "B")
+    {
+        return 2.0;
+    }
+    else if (false_easting == "C")
+    {
+        return 3.0;
+    }
+    else if (false_easting == "D")
+    {
+        return 4.0;
+    }
+    else if (false_easting == "E")
+    {
+        return 5.0;
+    }
+    else if (false_easting == "F")
+    {
+        return 6.0;
+    }
+    else if (false_easting == "G")
+    {
+        return 7.0;
+    }
+    else if (false_easting == "H")
+    {
+        return 8.0;
+    }
+    else if (false_easting == "J")
+    {
+        return 1.0;
+    }
+    else if (false_easting == "K")
+    {
+        return 2.0;
+    }
+    else if (false_easting == "L")
+    {
+        return 3.0;
+    }
+    else if (false_easting == "M")
+    {
+        return 4.0;
+    }
+    else if (false_easting == "N")
+    {
+        return 5.0;
+    }
+    else if (false_easting == "P")
+    {
+        return 6.0;
+    }
+    else if (false_easting == "Q")
+    {
+        return 7.0;
+    }
+    else if (false_easting == "R")
+    {
+        return 8.0;
+    }
+    else if (false_easting == "S")
+    {
+        return 1.0;
+    }
+    else if (false_easting == "T")
+    {
+        return 2.0;
+    }
+    else if (false_easting == "U")
+    {
+        return 3.0;
+    }
+    else if (false_easting == "V")
+    {
+        return 4.0;
+    }
+    else if (false_easting == "W")
+    {
+        return 5.0;
+    }
+    else if (false_easting == "X")
+    {
+        return 6.0;
+    }
+    else if (false_easting == "Y")
+    {
+        return 7.0;
+    }
+    else if (false_easting == "Z")
+    {
+        return 8.0;
+    }
+    return 0;
+}
+
+double decode_false_northing(std::string false_northing, int grid_zone)
+{
+    int remain = grid_zone % 2;
+    if (remain==1)
+    {
+        if (false_northing=="A")
+        {
+            return 0.0;
+        }
+        else if(false_northing=="B")
+        {
+            return 1.0;
+        }
+        else if(false_northing=="C")
+        {
+            return 2.0;
+        }
+        else if(false_northing=="D")
+        {
+            return 3.0;
+        }
+        else if(false_northing=="E")
+        {
+            return 4.0;
+        }
+        else if(false_northing=="F")
+        {
+            return 5.0;
+        }
+        else if(false_northing=="G")
+        {
+            return 6.0;
+        }
+        else if(false_northing=="H")
+        {
+            return 7.0;
+        }
+        else if(false_northing=="J")
+        {
+            return 8.0;
+        }
+        else if(false_northing=="K")
+        {
+            return 9.0;
+        }
+        else if(false_northing=="L")
+        {
+            return 10.0;
+        }
+        else if(false_northing=="M")
+        {
+            return 11.0;
+        }
+        else if(false_northing=="N")
+        {
+            return 12.0;
+        }
+        else if(false_northing=="P")
+        {
+            return 13.0;
+        }
+        else if(false_northing=="Q")
+        {
+            return 14.0;
+        }
+        else if(false_northing=="R")
+        {
+            return 15.0;
+        }
+        else if(false_northing=="S")
+        {
+            return 16.0;
+        }
+        else if(false_northing=="T")
+        {
+            return 17.0;
+        }
+        else if(false_northing=="U")
+        {
+            return 18.0;
+        }
+        else if(false_northing=="V")
+        {
+            return 19.0;
+        }
+    }
+    else
+    {
+        if (false_northing=="F")
+        {
+            return 0.0;
+        }
+        else if(false_northing=="G")
+        {
+            return 1.0;
+        }
+        else if(false_northing=="H")
+        {
+            return 2.0;
+        }
+        else if(false_northing=="J")
+        {
+            return 3.0;
+        }
+        else if(false_northing=="K")
+        {
+            return 4.0;
+        }
+        else if(false_northing=="L")
+        {
+            return 5.0;
+        }
+        else if(false_northing=="M")
+        {
+            return 6.0;
+        }
+        else if(false_northing=="N")
+        {
+            return 7.0;
+        }
+        else if(false_northing=="P")
+        {
+            return 8.0;
+        }
+        else if(false_northing=="Q")
+        {
+            return 9.0;
+        }
+        else if(false_northing=="R")
+        {
+            return 10.0;
+        }
+        else if(false_northing=="S")
+        {
+            return 11.0;
+        }
+        else if(false_northing=="T")
+        {
+            return 12.0;
+        }
+        else if(false_northing=="U")
+        {
+            return 13.0;
+        }
+        else if(false_northing=="V")
+        {
+            return 14.0;
+        }
+        else if(false_northing=="A")
+        {
+            return 15.0;
+        }
+        else if(false_northing=="B")
+        {
+            return 16.0;
+        }
+        else if(false_northing=="C")
+        {
+            return 17.0;
+        }
+        else if(false_northing=="D")
+        {
+            return 18.0;
+        }
+        else if(false_northing=="E")
+        {
+            return 19.0;
+        }        
+    }
+    return 0;
 }
 
 #endif

@@ -7,9 +7,13 @@ Current Stable Classes
 ---
 - [x] LLA to UTM conversion
 - [x] UTM to LLA conversion
+- [x] LLA to MGRS conversion
+- [x] MGRS to LLA conversion
+- [x] MGRS to UTM conversion
+- [x] UTM to MGRS conversion
 
 Work in Progress
 ---
-- [ ] MGRS outputs
+- [ ] Ongoing testing
 - [ ] ECEF to UTM 
 - [ ] UTM to ECEF

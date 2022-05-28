@@ -172,29 +172,37 @@ public:
     // ------------------------------------------------------------------------------------------
     mgrs convert_utm2mgrs(utm utm_in)
     {
-        int east_remain;
-        east_remain = utm_in.grid_zone % 3;
-
-        int north_remain;
-        north_remain = utm_in.grid_zone % 2;
-
         int false_easting;
         int false_northing;
+
+        // Get LLA Coordinates for the grid zone letter
+        lla lla_coords = convert_utm2lla(utm_in);
 
         false_easting = trunc(utm_in.easting / 100000);
         false_northing = trunc(utm_in.northing / 100000);
 
         mgrs mgrs_coordinates;
-        std::cout << "False Easting: " << false_easting << " False Northing: " << false_northing << std::endl;
         mgrs_coordinates.easting = utm_in.easting - false_easting * 100000;
         mgrs_coordinates.northing = utm_in.northing - false_northing * 100000;
-        mgrs_coordinates.false_easting = lookup_easting(east_remain, false_easting);
-        mgrs_coordinates.false_northing = lookup_northing(north_remain, false_northing);
+        mgrs_coordinates.false_easting = lookup_easting(utm_in.easting, utm_in.grid_zone);
+        mgrs_coordinates.false_northing = lookup_northing(utm_in.northing, utm_in.grid_zone);
         mgrs_coordinates.grid_zone = utm_in.grid_zone;
-        mgrs_coordinates.grid_letter = lookup_gridzone(lat_deg);
-        std::cout << "MGRS: " << mgrs_coordinates.grid_zone << mgrs_coordinates.grid_letter << " " << mgrs_coordinates.false_easting << mgrs_coordinates.false_northing << " " << mgrs_coordinates.easting << " " << mgrs_coordinates.northing << std::endl;
+        mgrs_coordinates.grid_letter = lookup_gridzone(lla_coords.latitude);
 
         return mgrs_coordinates;
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // MGRS to UTM Conversion
+    // ------------------------------------------------------------------------------------------
+    utm convert_mgrs2utm(mgrs mgrs_in)
+    {
+        utm utm_coords;
+        utm_coords.grid_zone = mgrs_in.grid_zone;
+        utm_coords.easting = mgrs_in.easting + decode_false_easting(mgrs_in.false_easting)*100000.0;
+        utm_coords.northing = mgrs_in.northing + decode_false_northing(mgrs_in.false_northing, mgrs_in.grid_zone)*100000.0;
+        
+        return utm_coords;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -299,6 +307,7 @@ public:
 
         int i=0;
         double es;
+
         while(sqrt(pow(lat_rad-lat0, 2))>convergence_threshold && i<max_nubmer_iterations)
         {
             lat0 = lat_rad;
@@ -306,7 +315,6 @@ public:
             lat_rad = 2*atan(pow(((1.0+es)/(1.0-es)),(e/2.0))*exp(L)) - M_PI/2.0;
             i++;
         }
-        std::cout<<i<<std::endl;
 
         lat_deg = lat_rad*180.0/M_PI;
         lon_deg = lon_rad*180.0/M_PI;
@@ -319,6 +327,36 @@ public:
         return lla_coords;
     }
 
+    // ------------------------------------------------------------------------------------------
+    // LLA to MGRS
+    // ------------------------------------------------------------------------------------------
+    mgrs convert_lla2mgrs(lla lla_in)
+    {        
+        return convert_utm2mgrs(convert_lla2utm(lla_in));
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // MGRS to LLA
+    // ------------------------------------------------------------------------------------------
+    lla convert_mgrs2lla(mgrs mgrs_in)
+    {
+        return convert_utm2lla(convert_mgrs2utm(mgrs_in));
+    }
+    
+    void print_utm(utm utm_in)
+    {
+        std::cout<<std::fixed<<"UTM:  "<<utm_in.easting<<" "<<utm_in.northing<<" "<<utm_in.grid_zone<<std::endl;
+    }
+    
+    void print_mgrs(mgrs mgrs_in)
+    {
+        std::cout<<std::fixed<<"MGRS: "<<mgrs_in.grid_zone<<mgrs_in.grid_letter<<" "<<mgrs_in.false_easting<<mgrs_in.false_northing<<" "<<mgrs_in.easting<<" "<<mgrs_in.northing<<std::endl;
+    }
+
+    void print_lla(lla lla_in)
+    {
+        std::cout<<std::fixed<<"LLA:  "<<lla_in.latitude<<" "<<lla_in.longitude<<std::endl;
+    }
 };
 
 #endif
