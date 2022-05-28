@@ -6,10 +6,10 @@ As this package devolps the names of functions may change slightly to reflect th
 Current Stable Classes
 ---
 - [x] LLA to UTM conversion
+- [x] UTM to LLA conversion
 
 Work in Progress
 ---
-- [ ] UTM to LLA conversion
 - [ ] MGRS outputs
 - [ ] ECEF to UTM 
 - [ ] UTM to ECEF
