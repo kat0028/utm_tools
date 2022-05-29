@@ -62,6 +62,7 @@ private:
         int i = 1;
         bool key = true;
 
+        // Calculate the "Nominal" Grid Zone
         while (key)
         {
             if (lon_deg < bound)
@@ -78,7 +79,7 @@ private:
             bound += 6;
         }
 
-        //Exceptions
+        // Administrative Exceptions to Grid Zone
         if ((grid_zone==31 && lon_deg>=3.0)&&(lat_deg<64.0 && lat_deg>=56.0))
         {
             grid_zone = 32;
@@ -106,7 +107,7 @@ private:
                 grid_zone = 35;
             }
         }
-        else if (grid_zone==36 && lat_deg>=72)
+        else if (grid_zone==36 && lat_deg>=72.0)
         {
             if (lon_deg<33.0)
             {
@@ -117,7 +118,9 @@ private:
                 grid_zone = 37;
             }
         }
-        L0 = (grid_zone*6)-183;
+
+        // Calculate the Central Meridian for the Grid Zone
+        L0 = (grid_zone*6.0)-183.0;
     }
 
     void set_ceofs1()
