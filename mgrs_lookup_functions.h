@@ -1,6 +1,7 @@
 #ifndef MGRS_LOOKUP_FUNCTIONS
 #define MGRS_LOOKUP_FUNCTIONS
 #include <string>
+#include <cmath>
 // ------------------------------------------------------------------------------------------
 // LOOKUP TABLES FOR MGRS
 // ------------------------------------------------------------------------------------------

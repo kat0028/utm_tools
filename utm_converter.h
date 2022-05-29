@@ -230,6 +230,7 @@ public:
         mgrs_coordinates.false_northing = lookup_northing(utm_in.northing, utm_in.grid_zone);
         mgrs_coordinates.grid_zone = utm_in.grid_zone;
         mgrs_coordinates.grid_letter = lookup_gridzone(lla_coords.latitude);
+        mgrs_coordinates.alt = utm_in.alt;
 
         return mgrs_coordinates;
     }
@@ -243,6 +244,7 @@ public:
         utm_coords.grid_zone = mgrs_in.grid_zone;
         utm_coords.easting = mgrs_in.easting + decode_false_easting(mgrs_in.false_easting)*100000.0;
         utm_coords.northing = mgrs_in.northing + decode_false_northing(mgrs_in.false_northing, mgrs_in.grid_zone)*100000.0;
+        utm_coords.alt = mgrs_in.alt;
         
         return utm_coords;
     }
@@ -293,6 +295,7 @@ public:
         {
             utm_coordinates.grid_zone = -1 * grid_zone;
         }
+        utm_coordinates.alt = lla_in.alt;
 
         return utm_coordinates;
     }
