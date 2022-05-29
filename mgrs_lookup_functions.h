@@ -129,7 +129,7 @@ std::string lookup_northing(double northing_in, int grid_zone_in)
     
     int northing;
     northing = trunc(northing_in);
-    northing = floor((northing % 2000000)/100000);
+    northing = trunc((northing % 2000000)/100000);
 
     if (remain == 1)
     {
