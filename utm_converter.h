@@ -61,13 +61,11 @@ private:
         int bound = -174;
         int i = 1;
         bool key = true;
-        // boundaries.clear();
-        // central_meridians.clear();
+
         while (key)
         {
             if (lon_deg < bound)
             {
-                L0 = bound - 3;
                 grid_zone = i;
                 key = false;
             }
@@ -79,6 +77,47 @@ private:
             i++;
             bound += 6;
         }
+
+        //Exceptions
+        if ((grid_zone==31 && lon_deg>=3.0)&&(lat_deg<64.0 && lat_deg>=56.0))
+        {
+            grid_zone = 32;
+            L0 = 9;
+        }
+        else if (grid_zone==32 && lat_deg>=72.0)
+        {
+            if (lon_deg<9.0)
+            {
+                grid_zone = 31;
+            }
+            else
+            {
+                grid_zone = 33;
+            }
+        }
+        else if (grid_zone==34 && lat_deg>=72.0)
+        {
+            if (lon_deg<21.0)
+            {
+                grid_zone = 33;
+            }
+            else
+            {
+                grid_zone = 35;
+            }
+        }
+        else if (grid_zone==36 && lat_deg>=72)
+        {
+            if (lon_deg<33.0)
+            {
+                grid_zone = 35;
+            }
+            else
+            {
+                grid_zone = 37;
+            }
+        }
+        L0 = (grid_zone*6)-183;
     }
 
     void set_ceofs1()
