@@ -42,6 +42,8 @@ MGRS
 - false_northing (string)
 
 # Work in Progress
+- [ ] GUI Implementation (Windows)
 - [ ] Ongoing testing
 - [ ] ECEF to UTM 
 - [ ] UTM to ECEF
+
