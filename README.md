@@ -3,7 +3,12 @@
 This is a header only package that contains classes for converting to and from the UTM coordinate system.
 As this package devolps the names of functions may change slightly to reflect the format of the data being entered.
 
-Current Stable Classes
+Current Features
+---
+The utm_converter class has class member functions for converting between LLA MGRS and UTM. Each of the coordinate frames has a data structure associated with it. 
+Note: The current version of the code that exists on this branch accounts for the administrative exceptions to UTM in Northern Europe and the regions above 72 degrees North.
+
+Current Stable Class Functions
 ---
 - [x] LLA to UTM conversion
 - [x] UTM to LLA conversion
