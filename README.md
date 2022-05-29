@@ -6,6 +6,7 @@ As this package devolps the names of functions may change slightly to reflect th
 Current Features
 ---
 The utm_converter class has class member functions for converting between LLA MGRS and UTM. Each of the coordinate frames has a data structure associated with it. 
+
 Note: The current version of the code that exists on this branch accounts for the administrative exceptions to UTM in Northern Europe and the regions above 72 degrees North.
 
 Current Stable Class Functions
