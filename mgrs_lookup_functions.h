@@ -17,107 +17,113 @@ std::string lookup_easting(double easting_in, int grid_zone_in)
 
     if (remain == 1)
     {
-        if (easting == 1)
+        switch (easting)
         {
-            return "A";
-        }
-        else if (easting == 2)
-        {
-            return "B";
-        }
-        else if (easting == 3)
-        {
-            return "C";
-        }
-        else if (easting == 4)
-        {
-            return "D";
-        }
-        else if (easting == 5)
-        {
-            return "E";
-        }
-        else if (easting == 6)
-        {
-            return "F";
-        }
-        else if (easting == 7)
-        {
-            return "G";
-        }
-        else if (easting == 8)
-        {
-            return "H";
+            case 1:
+                return "A";
+                break;
+            
+            case 2:
+                return "B";
+                break;
+
+            case 3: 
+                return "C";
+                break;
+
+            case 4: 
+                return "D";
+                break;
+            
+            case 5:
+                return "E";
+                break;
+            
+            case 6:
+                return "F";
+                break;
+            
+            case 7:
+                return "G";
+                break;
+
+            case 8:
+                return "H";
+                break;
         }
     }
     else if (remain == 2)
     {
-        if (easting == 1)
+        switch(easting)
         {
-            return "J";
-        }
-        else if (easting == 2)
-        {
-            return "K";
-        }
-        else if (easting == 3)
-        {
-            return "L";
-        }
-        else if (easting == 4)
-        {
-            return "M";
-        }
-        else if (easting == 5)
-        {
-            return "N";
-        }
-        else if (easting == 6)
-        {
-            return "P";
-        }
-        else if (easting == 7)
-        {
-            return "Q";
-        }
-        else if (easting == 8)
-        {
-            return "R";
+            case 1:
+                return "J";
+                break;
+            
+            case 2:
+                return "K";
+                break;
+
+            case 3:
+                return "L";
+                break;
+            
+            case 4:
+                return "M";
+                break;
+            
+            case 5:
+                return "N";
+                break;
+            
+            case 6:
+                return "P";
+                break;
+            
+            case 7:
+                return "Q";
+                break;
+            
+            case 8:
+                return "R";
+                break;
         }
     }
     else if (remain == 0)
     {
-        if (easting == 1)
+        switch(easting)
         {
-            return "S";
-        }
-        else if (easting == 2)
-        {
-            return "T";
-        }
-        else if (easting == 3)
-        {
-            return "U";
-        }
-        else if (easting == 4)
-        {
-            return "V";
-        }
-        else if (easting == 5)
-        {
-            return "W";
-        }
-        else if (easting == 6)
-        {
-            return "X";
-        }
-        else if (easting == 7)
-        {
-            return "Y";
-        }
-        else if (easting == 8)
-        {
-            return "Z";
+            case 1:
+                return "S";
+                break;
+
+            case 2:
+                return "T";
+                break;
+            
+            case 3:
+                return "U";
+                break;
+            
+            case 4: 
+                return "V";
+                break;
+
+            case 5: 
+                return "W";
+                break;
+
+            case 6:
+                return "X";
+                break;
+
+            case 7:
+                return "Y";
+                break;
+            
+            case 8:
+                return "Z";
+                break;
         }
     }
     return "easting not found";
@@ -134,168 +140,172 @@ std::string lookup_northing(double northing_in, int grid_zone_in)
 
     if (remain == 1)
     {
-        if (northing == 0)
+        switch(northing)
         {
-            return "A";
-        }
-        else if (northing == 1)
-        {
-            return "B";
-        }
-        else if (northing == 2)
-        {
-            return "C";
-        }
-        else if (northing == 3)
-        {
-            return "D";
-        }
-        else if (northing == 4)
-        {
-            return "E";
-        }
-        else if (northing == 5)
-        {
-            return "F";
-        }
-        else if (northing == 6)
-        {
-            return "G";
-        }
-        else if (northing == 7)
-        {
-            return "H";
-        }
-        else if (northing == 8)
-        {
-            return "J";
-        }
-        else if (northing == 9)
-        {
-            return "K";
-        }
-        else if (northing == 10)
-        {
-            return "L";
-        }
-        else if (northing == 11)
-        {
-            return "M";
-        }
-        else if (northing == 12)
-        {
-            return "N";
-        }
-        else if (northing == 13)
-        {
-            return "P";
-        }
-        else if (northing == 14)
-        {
-            return "Q";
-        }
-        else if (northing == 15)
-        {
-            return "R";
-        }
-        else if (northing == 16)
-        {
-            return "S";
-        }
-        else if (northing == 17)
-        {
-            return "T";
-        }
-        else if (northing == 18)
-        {
-            return "U";
-        }
-        else if (northing == 19)
-        {
-            return "V";
+            case 0:
+                return "A";
+                break;
+            
+            case 1:
+                return "B";
+                break;
+            
+            case 2:
+                return "C";
+                break;
+            
+            case 3:
+                return "D";
+                break;
+            
+            case 4:
+                return "E";
+                break;
+            
+            case 5:
+                return "F";
+                break;
+            
+            case 6:
+                return "G";
+                break;
+            
+            case 7:
+                return "H";
+                break;
+            
+            case 8:
+                return "J";
+                break;
+
+            case 9:
+                return "K";
+                break;
+            
+            case 10:
+                return "L";
+                break;
+            
+            case 11:
+                return "M";
+                break;
+                
+            case 12:
+                return "N";
+                break;
+            
+            case 13:
+                return "P";
+                break;
+
+            case 14:
+                return "Q";
+                break;
+            
+            case 15: 
+                return "R";
+                break;
+            
+            case 16:
+                return "S";
+                break;
+            
+            case 17:
+                return "T";
+                break;
+            
+            case 18:
+                return "U";
+                break;
+            
+            case 19:
+                return "V";
+                break;
         }
     }
     else if (remain == 0)
     {
-        if (northing == 0)
+        switch(northing)
         {
-            return "F";
-        }
-        else if (northing == 1)
-        {
-            return "G";
-        }
-        else if (northing == 2)
-        {
-            return "H";
-        }
-        else if (northing == 3)
-        {
-            return "J";
-        }
-        else if (northing == 4)
-        {
-            return "K";
-        }
-        else if (northing == 5)
-        {
-            return "L";
-        }
-        else if (northing == 6)
-        {
-            return "M";
-        }
-        else if (northing == 7)
-        {
-            return "N";
-        }
-        else if (northing == 8)
-        {
-            return "P";
-        }
-        else if (northing == 9)
-        {
-            return "Q";
-        }
-        else if (northing == 10)
-        {
-            return "R";
-        }
-        else if (northing == 11)
-        {
-            return "S";
-        }
-        else if (northing == 12)
-        {
-            return "T";
-        }
-        else if (northing == 13)
-        {
-            return "U";
-        }
-        else if (northing == 14)
-        {
-            return "V";
-        }
-        else if (northing == 15)
-        {
-            return "A";
-        }
-        else if (northing == 16)
-        {
-            return "B";
-        }
-        else if (northing == 17)
-        {
-            return "C";
-        }
-        else if (northing == 18)
-        {
-            return "D";
-        }
-        else if (northing == 19)
-        {
-            return "E";
+            case 0:
+                return "F";
+                break;
+        
+            case 1:
+                return "G";
+                break;
+            
+            case 2:
+                return "H";
+                break;
+            
+            case 3:
+                return "J";
+                break;
+            
+            case 4:
+                return "K";
+                break;
+            
+            case 5:
+                return "L";
+                break;
+            
+            case 6:
+                return "M";
+                break;
+            
+            case 7:
+                return "N";
+                break;
+            
+            case 8:
+                return "P";
+                break;
+            
+            case 9:
+                return "Q";
+                break;
+            
+            case 10:
+                return "R";
+                break;
+            
+            case 11:
+                return "S";
+                break;
+
+            case 12:
+                return "T";
+                break;
+            
+            case 13:
+                return "U";
+                break;
+            
+            case 14:
+                return "V";
+                break;
+            
+            case 15:
+                return "A";
+                break;
+
+            case 16:
+                return "B";
+                break;
+            
+            case 17:
+                return "C";
+                break;
+
+            case 18: 
+                return "D";
+                break;
+            
+            case 19:
+                return "E";
+                break;
         }
     }
     return "northing not found";
