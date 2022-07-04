@@ -169,6 +169,17 @@ public:
         double alt;
     };
 
+    struct lladms
+    {
+        int latitude_degrees;
+        int latitude_minutes;
+        double latitude_seconds;
+        int longitude_degrees;
+        int longitude_minutes;
+        double longitude_seconds;
+        double alt;
+    };
+
     // ------------------------------------------------------------------------------------------
     // FUNCTIONS
     // ------------------------------------------------------------------------------------------
@@ -373,6 +384,42 @@ public:
     }
 
     // ------------------------------------------------------------------------------------------
+    // LLADMS to LLA
+    // ------------------------------------------------------------------------------------------
+    lla convert_lladms2lla(lladms lladms_in)
+    {
+        lla lla_coords;
+        lla_coords.latitude = lladms_in.latitude_degrees + lladms_in.latitude_minutes/60.0 + lladms_in.latitude_seconds/(60.0*60.0);
+        lla_coords.longitude = lladms_in.longitude_degrees + lladms_in.longitude_minutes/60.0 + lladms_in.longitude_seconds/(60.0*60.0);
+        lla_coords.alt = lladms_in.alt;
+        return lla_coords;
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // LLA to LLADMS
+    // ------------------------------------------------------------------------------------------
+    lladms convert_lla2lladms(lla lla_in)
+    {
+        lladms lladms_coords;
+        
+        lladms_coords.latitude_degrees = trunc(lla_in.latitude);
+        double remain = lla_in.latitude - lladms_coords.latitude_degrees;
+        lladms_coords.latitude_minutes = trunc(remain*60.0);
+        remain = remain-lladms_coords.latitude_minutes/60.0;
+        lladms_coords.latitude_seconds = remain*(60.0*60.0);
+
+        lladms_coords.longitude_degrees = trunc(lla_in.longitude);
+        remain = lla_in.longitude - lladms_coords.longitude_degrees;
+        lladms_coords.longitude_minutes = trunc(remain*60.0);
+        remain = remain-lladms_coords.longitude_minutes/60.0;
+        lladms_coords.longitude_seconds = remain*(60.0*60.0);
+
+        lladms_coords.alt = lla_in.alt;
+
+        return lladms_coords;
+    }
+
+    // ------------------------------------------------------------------------------------------
     // LLA to MGRS
     // ------------------------------------------------------------------------------------------
     mgrs convert_lla2mgrs(lla lla_in)
@@ -388,6 +435,9 @@ public:
         return convert_utm2lla(convert_mgrs2utm(mgrs_in));
     }
     
+    // ------------------------------------------------------------------------------------------
+    // PRINT FUNCTIONS
+    // ------------------------------------------------------------------------------------------
     void print_utm(utm utm_in)
     {
         std::cout<<std::fixed<<"UTM:  "<<utm_in.easting<<" "<<utm_in.northing<<" "<<utm_in.grid_zone<<std::endl;
@@ -402,6 +452,12 @@ public:
     {
         std::cout<<std::fixed<<"LLA:  "<<lla_in.latitude<<" "<<lla_in.longitude<<std::endl;
     }
+
+    void print_lladms(lladms lladms_in)
+    {
+        std::cout<<std::fixed<<"DMS:  "<<lladms_in.latitude_degrees<<" "<<lladms_in.latitude_minutes<<" "<<lladms_in.latitude_seconds<<" "<<lladms_in.longitude_degrees<<" "<<lladms_in.longitude_minutes<<" "<<lladms_in.longitude_seconds<<std::endl;
+    }
+    
 };
 
 #endif
