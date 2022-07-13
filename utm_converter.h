@@ -45,6 +45,8 @@ private:
     double z_n;
     double Z_e;
     double Z_n;
+    double rad2deg;
+    double deg2rad;
 
     // Inputs and Outputs
     double lat_deg;
@@ -54,6 +56,20 @@ private:
     double easting;
     double northing;
     int grid_zone;
+
+    // ECEF2LLA Variables
+    double rho;
+    double count;
+    double cosprev;
+    double sinprev;
+    double cosbeta;
+    double sinbeta;
+    double u;
+    double v;
+    double error;
+    double error_threshold;
+    bool converge;
+    double N;
 
     // Utility Functions
     void calc_gz()
@@ -141,6 +157,18 @@ private:
         c5 = (4397.0 / 41287680.0) * e8;
     }
 
+    int sign(double x)
+    {
+        if(x>=0)
+        {
+            return 1;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
 public:
     // Structs for coordinate data
     struct utm
@@ -180,6 +208,13 @@ public:
         double alt;
     };
 
+    struct ecef
+    {
+        double x;
+        double y;
+        double z;
+    };
+
     // ------------------------------------------------------------------------------------------
     // FUNCTIONS
     // ------------------------------------------------------------------------------------------
@@ -189,7 +224,7 @@ public:
     {
         a = 6378137.0;
         f = 298.257223563;
-        b = a * (1 - 1 / f);
+        b = a * (1.0 - 1.0 / f);
         K0 = 0.9996;
         X0 = 500000;
 
@@ -201,6 +236,10 @@ public:
         e8 = pow(e, 8);
 
         n = a * K0;
+
+        error_threshold = 1e-16;
+        rad2deg = 180.0/M_PI;
+        deg2rad = M_PI/180.0;
     }
 
     // DESTRUCTOR
@@ -281,9 +320,9 @@ public:
 
         calc_gz();
 
-        lon_rad = lon_deg * M_PI / 180.0;
-        lat_rad = lat_deg * M_PI / 180.0;
-        L0 = L0 * M_PI / 180.0;
+        lon_rad = lon_deg * deg2rad;
+        lat_rad = lat_deg * deg2rad;
+        L0 = L0 * deg2rad;
 
         L = log(tan(M_PI / 4 + lat_rad / 2) * (pow(((1 - e * sin(lat_rad)) / (1 + e * sin(lat_rad))), (e / 2))));
         z_e = log(tan(M_PI / 4 + asin(sin(lon_rad - L0) / cosh(L)) / 2));
@@ -331,7 +370,7 @@ public:
         }
 
         // Central Meridian
-        L0 = (6.0*abs(grid_zone)-183.0) * M_PI/180.0;
+        L0 = (6.0*abs(grid_zone)-183.0) * deg2rad;
 
         // Parameters for converging equation
         int max_nubmer_iterations;
@@ -372,8 +411,8 @@ public:
             i++;
         }
 
-        lat_deg = lat_rad*180.0/M_PI;
-        lon_deg = lon_rad*180.0/M_PI;
+        lat_deg = lat_rad*rad2deg;
+        lon_deg = lon_rad*rad2deg;
 
         lla lla_coords;
         lla_coords.latitude=lat_deg;
@@ -434,6 +473,100 @@ public:
     {
         return convert_utm2lla(convert_mgrs2utm(mgrs_in));
     }
+
+    // ------------------------------------------------------------------------------------------
+    // ECEF2LLA
+    // ------------------------------------------------------------------------------------------
+    lla convert_ecef2lla(ecef ecef_in)
+    {
+        lla lla_coords;
+        lla_coords.longitude = atan2(ecef_in.y, ecef_in.x) * rad2deg;
+
+        rho = sqrt(ecef_in.x*ecef_in.x + ecef_in.y*ecef_in.y);
+
+        u = a * rho;
+        v = b * ecef_in.z * (1.0 + (b*e2/(1.0-e2))/sqrt(ecef_in.z*ecef_in.z + rho*rho));
+        
+        std::cout<<b<<"\t"<<ecef_in.z<<"\t"<<e2<<"\t"<<rho<<std::endl;
+
+        cosbeta = sign(u)/sqrt(1.0 + pow(v/u, 2));
+        sinbeta = sign(v)/sqrt(1.0 + pow(u/v, 2));
+
+        std::cout<<rho<<"\t"<<u<<"\t"<<v<<"\t"<<cosbeta<<"\t"<<sinbeta<<std::endl;
+        
+        count = 0;
+        converge = false;
+        while (!converge)
+        {
+            cosprev = cosbeta;
+            sinprev = sinbeta;
+            u = rho - a*e2 * pow(cosbeta, 3);
+            v = ecef_in.z + (b*e2/(1-e2)) * pow(sinbeta, 3);
+
+            cosbeta = sign(a*u) / sqrt(1.0 + pow(b*v/(a*u), 2));
+            sinbeta = sign(b*v) / sqrt(1.0 + pow(a*u/(b*v), 2));
+
+            error = sqrt(pow(cosbeta-cosprev, 2) + pow(sinbeta-sinprev, 2));
+            if (error<error_threshold)
+            {
+                converge = true;
+            }
+            count++;
+            std::cout<<count<<": "<<error<<std::endl;
+        }
+
+        lla_coords.latitude = atan2(v, u);
+        cosbeta = cos(lla_coords.latitude);
+        sinbeta = sin(lla_coords.latitude);
+
+        lla_coords.latitude = lla_coords.latitude * rad2deg;
+
+        N = a/sqrt(1-e2*sinbeta*sinbeta);
+        lla_coords.alt = rho*cosbeta + (ecef_in.z + e2*N*sinbeta) * sinbeta - N;
+
+        return lla_coords;
+        /*
+        double flattening = 1.0/f;
+        double nav_e2 = (2.0-flattening) * flattening;
+
+        double x = ecef_in.x;
+        double y = ecef_in.y;
+        double z = ecef_in.z;
+
+        double rhosqrd = (x*x + y*y);
+        double rho = sqrt(rhosqrd);
+        double templat = atan2(z, rho);
+        double tempalt = sqrt(rhosqrd + z*z) - a;
+        double rhoerror = 1000.0;
+        double zerror = 1000.0;
+
+        while ((abs(rhoerror)>1e-6) | (abs(zerror)>1e-6))
+        {
+            double slat = sin(templat);
+            double clat = cos(templat);
+            double q = 1.0-nav_e2 * slat*slat;
+            double rn = a/sqrt(q);
+            double drdl = rn*nav_e2*slat*clat/q;
+            rhoerror = (rn + tempalt)*clat - rho;
+            zerror = (rn * (1.0-nav_e2)+tempalt) * slat - z;
+
+            double aa = drdl * clat - (rn+tempalt)*slat;
+            double bb = clat;
+            double cc = (1.0 - nav_e2)*(drdl * slat + rn*clat);
+            double dd = slat;
+
+            double invdet = 1.0/(aa*dd - bb*cc);
+            templat = templat - invdet * (+dd * rhoerror - bb*zerror);
+            tempalt = tempalt - invdet * (-cc * rhoerror + aa*zerror);
+        }
+
+        lla lla_coords;
+        lla_coords.latitude = templat * rad2deg;
+        lla_coords.longitude = atan2(y, x) * rad2deg;
+        lla_coords.alt = tempalt;
+        return lla_coords;
+        */
+    }
     
     // ------------------------------------------------------------------------------------------
     // PRINT FUNCTIONS
@@ -450,7 +583,7 @@ public:
 
     void print_lla(lla lla_in)
     {
-        std::cout<<std::fixed<<"LLA:  "<<lla_in.latitude<<" "<<lla_in.longitude<<std::endl;
+        std::cout<<std::fixed<<"LLA:  "<<lla_in.latitude<<" "<<lla_in.longitude<<" "<<lla_in.alt<<std::endl;
     }
 
     void print_lladms(lladms lladms_in)
