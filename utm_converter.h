@@ -525,47 +525,6 @@ public:
         lla_coords.alt = rho*cosbeta + (ecef_in.z + e2*N*sinbeta) * sinbeta - N;
 
         return lla_coords;
-        /*
-        double flattening = 1.0/f;
-        double nav_e2 = (2.0-flattening) * flattening;
-
-        double x = ecef_in.x;
-        double y = ecef_in.y;
-        double z = ecef_in.z;
-
-        double rhosqrd = (x*x + y*y);
-        double rho = sqrt(rhosqrd);
-        double templat = atan2(z, rho);
-        double tempalt = sqrt(rhosqrd + z*z) - a;
-        double rhoerror = 1000.0;
-        double zerror = 1000.0;
-
-        while ((abs(rhoerror)>1e-6) | (abs(zerror)>1e-6))
-        {
-            double slat = sin(templat);
-            double clat = cos(templat);
-            double q = 1.0-nav_e2 * slat*slat;
-            double rn = a/sqrt(q);
-            double drdl = rn*nav_e2*slat*clat/q;
-            rhoerror = (rn + tempalt)*clat - rho;
-            zerror = (rn * (1.0-nav_e2)+tempalt) * slat - z;
-
-            double aa = drdl * clat - (rn+tempalt)*slat;
-            double bb = clat;
-            double cc = (1.0 - nav_e2)*(drdl * slat + rn*clat);
-            double dd = slat;
-
-            double invdet = 1.0/(aa*dd - bb*cc);
-            templat = templat - invdet * (+dd * rhoerror - bb*zerror);
-            tempalt = tempalt - invdet * (-cc * rhoerror + aa*zerror);
-        }
-
-        lla lla_coords;
-        lla_coords.latitude = templat * rad2deg;
-        lla_coords.longitude = atan2(y, x) * rad2deg;
-        lla_coords.alt = tempalt;
-        return lla_coords;
-        */
     }
     
     // ------------------------------------------------------------------------------------------
