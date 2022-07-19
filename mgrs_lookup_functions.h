@@ -1,5 +1,5 @@
-#ifndef MGRS_LOOKUP_FUNCTIONS
-#define MGRS_LOOKUP_FUNCTIONS
+#ifndef MGRS_LOOKUP_FUNCTIONS_H
+#define MGRS_LOOKUP_FUNCTIONS_H
 #include <string>
 #include <cmath>
 // ------------------------------------------------------------------------------------------
@@ -7,7 +7,7 @@
 // ------------------------------------------------------------------------------------------
 
 // UTM to MGRS
-std::string lookup_easting(double easting_in, int grid_zone_in)
+inline std::string lookup_easting(double easting_in, int grid_zone_in)
 {
     int remain;
     remain = grid_zone_in % 3;
@@ -129,7 +129,7 @@ std::string lookup_easting(double easting_in, int grid_zone_in)
     return "easting not found";
 }
 
-std::string lookup_northing(double northing_in, int grid_zone_in)
+inline std::string lookup_northing(double northing_in, int grid_zone_in)
 {
     int remain;
     remain = grid_zone_in % 2;
@@ -311,7 +311,7 @@ std::string lookup_northing(double northing_in, int grid_zone_in)
     return "northing not found";
 }
 
-std::string lookup_gridzone(int latitude)
+inline std::string lookup_gridzone(int latitude)
 {
     if (latitude < -80)
     {
@@ -404,7 +404,7 @@ std::string lookup_gridzone(int latitude)
 }
 
 // MGRS to UTM
-double decode_false_easting(std::string false_easting)
+inline double decode_false_easting(std::string false_easting)
 {
     if (false_easting == "A")
     {
@@ -505,7 +505,7 @@ double decode_false_easting(std::string false_easting)
     return 0;
 }
 
-double decode_false_northing(std::string false_northing, int grid_zone)
+inline double decode_false_northing(std::string false_northing, int grid_zone)
 {
     int remain = grid_zone % 2;
     if (remain==1)
