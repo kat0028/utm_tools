@@ -518,7 +518,6 @@ public:
                 std::cout<<"Point Under Tolerance"<<std::endl;
             }
             //std::cout<<count<<": "<<error<<std::endl;
-            std::cout<<count<<std::endl;
         }
 
         lla_coords.latitude = atan2(v, u);
