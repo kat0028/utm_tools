@@ -487,12 +487,12 @@ public:
         u = a * rho;
         v = b * ecef_in.z * (1.0 + (b*e2/(1.0-e2))/sqrt(ecef_in.z*ecef_in.z + rho*rho));
         
-        std::cout<<b<<"\t"<<ecef_in.z<<"\t"<<e2<<"\t"<<rho<<std::endl;
+        //std::cout<<b<<"\t"<<ecef_in.z<<"\t"<<e2<<"\t"<<rho<<std::endl;
 
         cosbeta = sign(u)/sqrt(1.0 + pow(v/u, 2));
         sinbeta = sign(v)/sqrt(1.0 + pow(u/v, 2));
 
-        std::cout<<rho<<"\t"<<u<<"\t"<<v<<"\t"<<cosbeta<<"\t"<<sinbeta<<std::endl;
+        //std::cout<<rho<<"\t"<<u<<"\t"<<v<<"\t"<<cosbeta<<"\t"<<sinbeta<<std::endl;
         
         count = 0;
         converge = false;
@@ -512,7 +512,13 @@ public:
                 converge = true;
             }
             count++;
-            std::cout<<count<<": "<<error<<std::endl;
+            if (count>100)
+            {
+                converge = true;
+                std::cout<<"Point Under Tolerance"<<std::endl;
+            }
+            //std::cout<<count<<": "<<error<<std::endl;
+            std::cout<<count<<std::endl;
         }
 
         lla_coords.latitude = atan2(v, u);
