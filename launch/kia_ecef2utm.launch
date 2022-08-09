@@ -1,0 +1,6 @@
+<launch>
+    <node name="kia_ecef2utm" pkg="utm_tools" type="ecef2utm_node" output="screen">
+        <param name="sub_topic" value="/kia_etalin/odom"/>
+        <param name="pub_topic" value="/kia_utm"/>
+    </node>
+</launch>

@@ -7,7 +7,13 @@ project(utm_tools)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
+  nav_msgs
+  roscpp
+  sensor_msgs
+  std_msgs
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -112,8 +118,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-include
-${catkin_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -131,6 +137,7 @@ add_library(${PROJECT_NAME}
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(utm_test src/test.cpp src/utm_converter.cpp)
+add_executable(ecef2utm_node src/ecef2utm_node.cpp src/utm_converter.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -141,11 +148,11 @@ add_executable(utm_test src/test.cpp src/utm_converter.cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 add_dependencies(utm_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(ecef2utm_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(utm_test
-  ${catkin_LIBRARIES}
-)
+target_link_libraries(utm_test ${catkin_LIBRARIES})
+target_link_libraries(ecef2utm_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
