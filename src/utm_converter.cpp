@@ -33,18 +33,18 @@ UTMConverter::~UTMConverter()
 // ------------------------------------------------------------------------------------------
 // UTM to MGRS Conversion
 // ------------------------------------------------------------------------------------------
-UTMConverter::mgrs UTMConverter::convert_utm2mgrs(UTMConverter::utm utm_in)
+void UTMConverter::convert_utm2mgrs(utm &utm_in, mgrs &mgrs_coordinates)
 {
     int false_easting;
     int false_northing;
 
     // Get LLA Coordinates for the grid zone letter
-    lla lla_coords = convert_utm2lla(utm_in);
+    lla lla_coords;
+    convert_utm2lla(utm_in, lla_coords);
 
     false_easting = trunc(utm_in.easting / 100000);
     false_northing = trunc(utm_in.northing / 100000);
 
-    mgrs mgrs_coordinates;
     mgrs_coordinates.easting = utm_in.easting - false_easting * 100000;
     mgrs_coordinates.northing = utm_in.northing - false_northing * 100000;
     mgrs_coordinates.false_easting = lookup_easting(utm_in.easting, utm_in.grid_zone);
@@ -52,28 +52,23 @@ UTMConverter::mgrs UTMConverter::convert_utm2mgrs(UTMConverter::utm utm_in)
     mgrs_coordinates.grid_zone = utm_in.grid_zone;
     mgrs_coordinates.grid_letter = lookup_gridzone(lla_coords.latitude);
     mgrs_coordinates.alt = utm_in.alt;
-
-    return mgrs_coordinates;
 }
 
 // ------------------------------------------------------------------------------------------
 // MGRS to UTM Conversion
 // ------------------------------------------------------------------------------------------
-UTMConverter::utm UTMConverter::convert_mgrs2utm(mgrs mgrs_in)
+void UTMConverter::convert_mgrs2utm(mgrs &mgrs_in, utm &utm_coords)
 {
-    utm utm_coords;
     utm_coords.grid_zone = mgrs_in.grid_zone;
     utm_coords.easting = mgrs_in.easting + decode_false_easting(mgrs_in.false_easting) * 100000.0;
     utm_coords.northing = mgrs_in.northing + decode_false_northing(mgrs_in.false_northing, mgrs_in.grid_zone) * 100000.0;
     utm_coords.alt = mgrs_in.alt;
-
-    return utm_coords;
 }
 
 // ------------------------------------------------------------------------------------------
 // LLA TO UTM CONVERSION
 // ------------------------------------------------------------------------------------------
-UTMConverter::utm UTMConverter::convert_lla2utm(lla lla_in)
+void UTMConverter::convert_lla2utm(lla &lla_in, utm &utm_coordinates)
 {
     lat_deg = lla_in.latitude;
     lon_deg = lla_in.longitude;
@@ -105,7 +100,6 @@ UTMConverter::utm UTMConverter::convert_lla2utm(lla lla_in)
     easting = Z_e + X0;
     northing = Z_n + Y0;
 
-    utm utm_coordinates;
     utm_coordinates.easting = easting;
     utm_coordinates.northing = northing;
     if (lat_deg > 0)
@@ -117,14 +111,12 @@ UTMConverter::utm UTMConverter::convert_lla2utm(lla lla_in)
         utm_coordinates.grid_zone = -1 * grid_zone;
     }
     utm_coordinates.alt = lla_in.alt;
-
-    return utm_coordinates;
 }
 
 // ------------------------------------------------------------------------------------------
 // UTM TO LLA CONVERSION
 // ------------------------------------------------------------------------------------------
-UTMConverter::lla UTMConverter::convert_utm2lla(utm utm_in)
+void UTMConverter::convert_utm2lla(utm &utm_in, lla &lla_coords)
 {
     easting = utm_in.easting;
     northing = utm_in.northing;
@@ -185,48 +177,66 @@ UTMConverter::lla UTMConverter::convert_utm2lla(utm utm_in)
     lat_deg = lat_rad * rad2deg;
     lon_deg = lon_rad * rad2deg;
 
-    lla lla_coords;
     lla_coords.latitude = lat_deg;
     lla_coords.longitude = lon_deg;
     lla_coords.alt = utm_in.alt;
-
-    return lla_coords;
 }
 
 // ------------------------------------------------------------------------------------------
 // LLADMS to LLA
 // ------------------------------------------------------------------------------------------
-UTMConverter::lla UTMConverter::convert_lladms2lla(lladms lladms_in)
+void UTMConverter::convert_lladms2lla(lladms &lladms_in, lla &lla_coords)
 {
-    lla lla_coords;
     lla_coords.latitude = lladms_in.latitude_degrees + lladms_in.latitude_minutes / 60.0 + lladms_in.latitude_seconds / (60.0 * 60.0);
     lla_coords.longitude = lladms_in.longitude_degrees + lladms_in.longitude_minutes / 60.0 + lladms_in.longitude_seconds / (60.0 * 60.0);
     lla_coords.alt = lladms_in.alt;
-    return lla_coords;
+}
+
+// ------------------------------------------------------------------------------------------
+// LLA to LLADMS
+// ------------------------------------------------------------------------------------------
+void UTMConverter::convert_lla2lladms(lla& lla_in, lladms& lladms_coords)
+{
+    lladms_coords.latitude_degrees = trunc(lla_in.latitude);
+    double remain = lla_in.latitude - lladms_coords.latitude_degrees;
+    lladms_coords.latitude_minutes = trunc(remain * 60.0);
+    remain = remain - lladms_coords.latitude_minutes / 60.0;
+    lladms_coords.latitude_seconds = remain * (60.0 * 60.0);
+
+    lladms_coords.longitude_degrees = trunc(lla_in.longitude);
+    remain = lla_in.longitude - lladms_coords.longitude_degrees;
+    lladms_coords.longitude_minutes = trunc(remain * 60.0);
+    remain = remain - lladms_coords.longitude_minutes / 60.0;
+    lladms_coords.longitude_seconds = remain * (60.0 * 60.0);
+
+    lladms_coords.alt = lla_in.alt;
 }
 
 // ------------------------------------------------------------------------------------------
 // LLA to MGRS
 // ------------------------------------------------------------------------------------------
-UTMConverter::mgrs UTMConverter::convert_lla2mgrs(lla lla_in)
+void UTMConverter::convert_lla2mgrs(lla& lla_in, mgrs& mgrs_out)
 {
-    return convert_utm2mgrs(convert_lla2utm(lla_in));
+    utm utm_coords;
+    convert_lla2utm(lla_in, utm_coords);
+    convert_utm2mgrs(utm_coords, mgrs_out);
 }
 
 // ------------------------------------------------------------------------------------------
 // MGRS to LLA
 // ------------------------------------------------------------------------------------------
-UTMConverter::lla UTMConverter::convert_mgrs2lla(mgrs mgrs_in)
+void UTMConverter::convert_mgrs2lla(mgrs& mgrs_in, lla& lla_out)
 {
-    return convert_utm2lla(convert_mgrs2utm(mgrs_in));
+    utm utm_coords;
+    convert_mgrs2utm(mgrs_in, utm_coords);
+    convert_utm2lla(utm_coords, lla_out);
 }
 
 // ------------------------------------------------------------------------------------------
 // ECEF2LLA
 // ------------------------------------------------------------------------------------------
-UTMConverter::lla UTMConverter::convert_ecef2lla(ecef ecef_in)
+void UTMConverter::convert_ecef2lla(ecef& ecef_in, lla& lla_coords)
 {
-    lla lla_coords;
     lla_coords.longitude = atan2(ecef_in.y, ecef_in.x) * rad2deg;
 
     rho = sqrt(ecef_in.x * ecef_in.x + ecef_in.y * ecef_in.y);
@@ -271,19 +281,17 @@ UTMConverter::lla UTMConverter::convert_ecef2lla(ecef ecef_in)
 
     N = a / sqrt(1 - e2 * sinbeta * sinbeta);
     lla_coords.alt = rho * cosbeta + (ecef_in.z + e2 * N * sinbeta) * sinbeta - N;
-
-    return lla_coords;
 }
 
 // ------------------------------------------------------------------------------------------
 // ECEF2UTM
 // ------------------------------------------------------------------------------------------
-UTMConverter::utm UTMConverter::convert_ecef2utm(ecef ecef_in)
+void UTMConverter::convert_ecef2utm(ecef& ecef_in, utm& utm_out)
 {
     lla lla_coords;
-    lla_coords = convert_ecef2lla(ecef_in);
+    convert_ecef2lla(ecef_in, lla_coords);
 
-    return convert_lla2utm(lla_coords);
+    return convert_lla2utm(lla_coords, utm_out);
 }
 
 // ------------------------------------------------------------------------------------------
@@ -408,8 +416,7 @@ int UTMConverter::sign(double x)
     }
 }
 
-
-// MGRS LOOKUP FUNCTIONS 
+// MGRS LOOKUP FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////
 // UTM to MGRS
 std::string UTMConverter::lookup_easting(double easting_in, int grid_zone_in)
@@ -418,117 +425,117 @@ std::string UTMConverter::lookup_easting(double easting_in, int grid_zone_in)
     remain = grid_zone_in % 3;
 
     int easting;
-    easting = trunc(easting_in/100000);
+    easting = trunc(easting_in / 100000);
 
     if (remain == 1)
     {
         switch (easting)
         {
-            case 1:
-                return "A";
-                break;
-            
-            case 2:
-                return "B";
-                break;
+        case 1:
+            return "A";
+            break;
 
-            case 3: 
-                return "C";
-                break;
+        case 2:
+            return "B";
+            break;
 
-            case 4: 
-                return "D";
-                break;
-            
-            case 5:
-                return "E";
-                break;
-            
-            case 6:
-                return "F";
-                break;
-            
-            case 7:
-                return "G";
-                break;
+        case 3:
+            return "C";
+            break;
 
-            case 8:
-                return "H";
-                break;
+        case 4:
+            return "D";
+            break;
+
+        case 5:
+            return "E";
+            break;
+
+        case 6:
+            return "F";
+            break;
+
+        case 7:
+            return "G";
+            break;
+
+        case 8:
+            return "H";
+            break;
         }
     }
     else if (remain == 2)
     {
-        switch(easting)
+        switch (easting)
         {
-            case 1:
-                return "J";
-                break;
-            
-            case 2:
-                return "K";
-                break;
+        case 1:
+            return "J";
+            break;
 
-            case 3:
-                return "L";
-                break;
-            
-            case 4:
-                return "M";
-                break;
-            
-            case 5:
-                return "N";
-                break;
-            
-            case 6:
-                return "P";
-                break;
-            
-            case 7:
-                return "Q";
-                break;
-            
-            case 8:
-                return "R";
-                break;
+        case 2:
+            return "K";
+            break;
+
+        case 3:
+            return "L";
+            break;
+
+        case 4:
+            return "M";
+            break;
+
+        case 5:
+            return "N";
+            break;
+
+        case 6:
+            return "P";
+            break;
+
+        case 7:
+            return "Q";
+            break;
+
+        case 8:
+            return "R";
+            break;
         }
     }
     else if (remain == 0)
     {
-        switch(easting)
+        switch (easting)
         {
-            case 1:
-                return "S";
-                break;
+        case 1:
+            return "S";
+            break;
 
-            case 2:
-                return "T";
-                break;
-            
-            case 3:
-                return "U";
-                break;
-            
-            case 4: 
-                return "V";
-                break;
+        case 2:
+            return "T";
+            break;
 
-            case 5: 
-                return "W";
-                break;
+        case 3:
+            return "U";
+            break;
 
-            case 6:
-                return "X";
-                break;
+        case 4:
+            return "V";
+            break;
 
-            case 7:
-                return "Y";
-                break;
-            
-            case 8:
-                return "Z";
-                break;
+        case 5:
+            return "W";
+            break;
+
+        case 6:
+            return "X";
+            break;
+
+        case 7:
+            return "Y";
+            break;
+
+        case 8:
+            return "Z";
+            break;
         }
     }
     return "easting not found";
@@ -538,179 +545,179 @@ std::string UTMConverter::lookup_northing(double northing_in, int grid_zone_in)
 {
     int remain;
     remain = grid_zone_in % 2;
-    
+
     int northing;
     northing = trunc(northing_in);
-    northing = trunc((northing % 2000000)/100000);
+    northing = trunc((northing % 2000000) / 100000);
 
     if (remain == 1)
     {
-        switch(northing)
+        switch (northing)
         {
-            case 0:
-                return "A";
-                break;
-            
-            case 1:
-                return "B";
-                break;
-            
-            case 2:
-                return "C";
-                break;
-            
-            case 3:
-                return "D";
-                break;
-            
-            case 4:
-                return "E";
-                break;
-            
-            case 5:
-                return "F";
-                break;
-            
-            case 6:
-                return "G";
-                break;
-            
-            case 7:
-                return "H";
-                break;
-            
-            case 8:
-                return "J";
-                break;
+        case 0:
+            return "A";
+            break;
 
-            case 9:
-                return "K";
-                break;
-            
-            case 10:
-                return "L";
-                break;
-            
-            case 11:
-                return "M";
-                break;
-                
-            case 12:
-                return "N";
-                break;
-            
-            case 13:
-                return "P";
-                break;
+        case 1:
+            return "B";
+            break;
 
-            case 14:
-                return "Q";
-                break;
-            
-            case 15: 
-                return "R";
-                break;
-            
-            case 16:
-                return "S";
-                break;
-            
-            case 17:
-                return "T";
-                break;
-            
-            case 18:
-                return "U";
-                break;
-            
-            case 19:
-                return "V";
-                break;
+        case 2:
+            return "C";
+            break;
+
+        case 3:
+            return "D";
+            break;
+
+        case 4:
+            return "E";
+            break;
+
+        case 5:
+            return "F";
+            break;
+
+        case 6:
+            return "G";
+            break;
+
+        case 7:
+            return "H";
+            break;
+
+        case 8:
+            return "J";
+            break;
+
+        case 9:
+            return "K";
+            break;
+
+        case 10:
+            return "L";
+            break;
+
+        case 11:
+            return "M";
+            break;
+
+        case 12:
+            return "N";
+            break;
+
+        case 13:
+            return "P";
+            break;
+
+        case 14:
+            return "Q";
+            break;
+
+        case 15:
+            return "R";
+            break;
+
+        case 16:
+            return "S";
+            break;
+
+        case 17:
+            return "T";
+            break;
+
+        case 18:
+            return "U";
+            break;
+
+        case 19:
+            return "V";
+            break;
         }
     }
     else if (remain == 0)
     {
-        switch(northing)
+        switch (northing)
         {
-            case 0:
-                return "F";
-                break;
-        
-            case 1:
-                return "G";
-                break;
-            
-            case 2:
-                return "H";
-                break;
-            
-            case 3:
-                return "J";
-                break;
-            
-            case 4:
-                return "K";
-                break;
-            
-            case 5:
-                return "L";
-                break;
-            
-            case 6:
-                return "M";
-                break;
-            
-            case 7:
-                return "N";
-                break;
-            
-            case 8:
-                return "P";
-                break;
-            
-            case 9:
-                return "Q";
-                break;
-            
-            case 10:
-                return "R";
-                break;
-            
-            case 11:
-                return "S";
-                break;
+        case 0:
+            return "F";
+            break;
 
-            case 12:
-                return "T";
-                break;
-            
-            case 13:
-                return "U";
-                break;
-            
-            case 14:
-                return "V";
-                break;
-            
-            case 15:
-                return "A";
-                break;
+        case 1:
+            return "G";
+            break;
 
-            case 16:
-                return "B";
-                break;
-            
-            case 17:
-                return "C";
-                break;
+        case 2:
+            return "H";
+            break;
 
-            case 18: 
-                return "D";
-                break;
-            
-            case 19:
-                return "E";
-                break;
+        case 3:
+            return "J";
+            break;
+
+        case 4:
+            return "K";
+            break;
+
+        case 5:
+            return "L";
+            break;
+
+        case 6:
+            return "M";
+            break;
+
+        case 7:
+            return "N";
+            break;
+
+        case 8:
+            return "P";
+            break;
+
+        case 9:
+            return "Q";
+            break;
+
+        case 10:
+            return "R";
+            break;
+
+        case 11:
+            return "S";
+            break;
+
+        case 12:
+            return "T";
+            break;
+
+        case 13:
+            return "U";
+            break;
+
+        case 14:
+            return "V";
+            break;
+
+        case 15:
+            return "A";
+            break;
+
+        case 16:
+            return "B";
+            break;
+
+        case 17:
+            return "C";
+            break;
+
+        case 18:
+            return "D";
+            break;
+
+        case 19:
+            return "E";
+            break;
         }
     }
     return "northing not found";
@@ -913,171 +920,171 @@ double UTMConverter::decode_false_easting(std::string false_easting)
 double UTMConverter::decode_false_northing(std::string false_northing, int grid_zone)
 {
     int remain = grid_zone % 2;
-    if (remain==1)
+    if (remain == 1)
     {
-        if (false_northing=="A")
+        if (false_northing == "A")
         {
             return 0.0;
         }
-        else if(false_northing=="B")
+        else if (false_northing == "B")
         {
             return 1.0;
         }
-        else if(false_northing=="C")
+        else if (false_northing == "C")
         {
             return 2.0;
         }
-        else if(false_northing=="D")
+        else if (false_northing == "D")
         {
             return 3.0;
         }
-        else if(false_northing=="E")
+        else if (false_northing == "E")
         {
             return 4.0;
         }
-        else if(false_northing=="F")
+        else if (false_northing == "F")
         {
             return 5.0;
         }
-        else if(false_northing=="G")
+        else if (false_northing == "G")
         {
             return 6.0;
         }
-        else if(false_northing=="H")
+        else if (false_northing == "H")
         {
             return 7.0;
         }
-        else if(false_northing=="J")
+        else if (false_northing == "J")
         {
             return 8.0;
         }
-        else if(false_northing=="K")
+        else if (false_northing == "K")
         {
             return 9.0;
         }
-        else if(false_northing=="L")
+        else if (false_northing == "L")
         {
             return 10.0;
         }
-        else if(false_northing=="M")
+        else if (false_northing == "M")
         {
             return 11.0;
         }
-        else if(false_northing=="N")
+        else if (false_northing == "N")
         {
             return 12.0;
         }
-        else if(false_northing=="P")
+        else if (false_northing == "P")
         {
             return 13.0;
         }
-        else if(false_northing=="Q")
+        else if (false_northing == "Q")
         {
             return 14.0;
         }
-        else if(false_northing=="R")
+        else if (false_northing == "R")
         {
             return 15.0;
         }
-        else if(false_northing=="S")
+        else if (false_northing == "S")
         {
             return 16.0;
         }
-        else if(false_northing=="T")
+        else if (false_northing == "T")
         {
             return 17.0;
         }
-        else if(false_northing=="U")
+        else if (false_northing == "U")
         {
             return 18.0;
         }
-        else if(false_northing=="V")
+        else if (false_northing == "V")
         {
             return 19.0;
         }
     }
     else
     {
-        if (false_northing=="F")
+        if (false_northing == "F")
         {
             return 0.0;
         }
-        else if(false_northing=="G")
+        else if (false_northing == "G")
         {
             return 1.0;
         }
-        else if(false_northing=="H")
+        else if (false_northing == "H")
         {
             return 2.0;
         }
-        else if(false_northing=="J")
+        else if (false_northing == "J")
         {
             return 3.0;
         }
-        else if(false_northing=="K")
+        else if (false_northing == "K")
         {
             return 4.0;
         }
-        else if(false_northing=="L")
+        else if (false_northing == "L")
         {
             return 5.0;
         }
-        else if(false_northing=="M")
+        else if (false_northing == "M")
         {
             return 6.0;
         }
-        else if(false_northing=="N")
+        else if (false_northing == "N")
         {
             return 7.0;
         }
-        else if(false_northing=="P")
+        else if (false_northing == "P")
         {
             return 8.0;
         }
-        else if(false_northing=="Q")
+        else if (false_northing == "Q")
         {
             return 9.0;
         }
-        else if(false_northing=="R")
+        else if (false_northing == "R")
         {
             return 10.0;
         }
-        else if(false_northing=="S")
+        else if (false_northing == "S")
         {
             return 11.0;
         }
-        else if(false_northing=="T")
+        else if (false_northing == "T")
         {
             return 12.0;
         }
-        else if(false_northing=="U")
+        else if (false_northing == "U")
         {
             return 13.0;
         }
-        else if(false_northing=="V")
+        else if (false_northing == "V")
         {
             return 14.0;
         }
-        else if(false_northing=="A")
+        else if (false_northing == "A")
         {
             return 15.0;
         }
-        else if(false_northing=="B")
+        else if (false_northing == "B")
         {
             return 16.0;
         }
-        else if(false_northing=="C")
+        else if (false_northing == "C")
         {
             return 17.0;
         }
-        else if(false_northing=="D")
+        else if (false_northing == "D")
         {
             return 18.0;
         }
-        else if(false_northing=="E")
+        else if (false_northing == "E")
         {
             return 19.0;
-        }        
+        }
     }
     return 0;
 }

@@ -8,7 +8,8 @@ int main(int argc, char **argv)
     lla_coords.alt = 200;
 
     UTMConverter converter;
-    UTMConverter::utm utm_coords = converter.convert_lla2utm(lla_coords);
+    UTMConverter::utm utm_coords;
+    converter.convert_lla2utm(lla_coords, utm_coords);
     converter.print_utm(utm_coords);
 
     return 0;
