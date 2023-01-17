@@ -1,5 +1,9 @@
-#ifndef UTM_CONVERTER_H
-#define UTM_CONVERTER_H
+//
+// Created by kyle on 11/26/22.
+//
+
+#ifndef POLARCOORDINATES_UTM_CONVERTER_H
+#define POLARCOORDINATES_UTM_CONVERTER_H
 
 #include <iostream>
 #include <cmath>
@@ -295,8 +299,35 @@ public:
         utm_coords.easting = mgrs_in.easting + decode_false_easting(mgrs_in.false_easting)*100000.0;
         utm_coords.northing = mgrs_in.northing + decode_false_northing(mgrs_in.false_northing, mgrs_in.grid_zone)*100000.0;
         utm_coords.alt = mgrs_in.alt;
-        
+
+        while (!check_grid_designator(utm_coords, mgrs_in) && utm_coords.northing < 10000000)
+        {
+            utm_coords.northing += 2000000;
+        }
+
         return utm_coords;
+    }
+
+    bool check_grid_designator(utm utm_in, mgrs mgrs_in)
+    {
+        mgrs check_coords = convert_utm2mgrs(utm_in);
+
+        if (check_coords.grid_letter != mgrs_in.grid_letter)
+        {
+            return false;
+        }
+
+        if (check_coords.false_northing != mgrs_in.false_northing)
+        {
+            return false;
+        }
+
+        if (check_coords.false_easting != mgrs_in.false_easting)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -389,7 +420,7 @@ public:
         Z_e = z_e - c2*cos(2.0*z_n)*sinh(2.0*z_e) - c3*cos(4.0*z_n)*sinh(4.0*z_e) - c4*cos(6.0*z_n)*sinh(6.0*z_e) - c5*cos(8.0*z_n)*sinh(8.0*z_e);
 
         double p;
-    
+
         p = asin(sin(Z_n)/cosh(Z_e));
         L = log(tan(M_PI/4.0+p/2.0));
 
@@ -440,7 +471,7 @@ public:
     lladms convert_lla2lladms(lla lla_in)
     {
         lladms lladms_coords;
-        
+
         lladms_coords.latitude_degrees = trunc(lla_in.latitude);
         double remain = lla_in.latitude - lladms_coords.latitude_degrees;
         lladms_coords.latitude_minutes = trunc(remain*60.0);
@@ -462,7 +493,7 @@ public:
     // LLA to MGRS
     // ------------------------------------------------------------------------------------------
     mgrs convert_lla2mgrs(lla lla_in)
-    {        
+    {
         return convert_utm2mgrs(convert_lla2utm(lla_in));
     }
 
@@ -486,14 +517,14 @@ public:
 
         u = a * rho;
         v = b * ecef_in.z * (1.0 + (b*e2/(1.0-e2))/sqrt(ecef_in.z*ecef_in.z + rho*rho));
-        
+
         //std::cout<<b<<"\t"<<ecef_in.z<<"\t"<<e2<<"\t"<<rho<<std::endl;
 
         cosbeta = sign(u)/sqrt(1.0 + pow(v/u, 2));
         sinbeta = sign(v)/sqrt(1.0 + pow(u/v, 2));
 
         //std::cout<<rho<<"\t"<<u<<"\t"<<v<<"\t"<<cosbeta<<"\t"<<sinbeta<<std::endl;
-        
+
         count = 0;
         converge = false;
         while (!converge)
@@ -550,7 +581,7 @@ public:
     {
         std::cout<<std::fixed<<"UTM:  "<<utm_in.easting<<" "<<utm_in.northing<<" "<<utm_in.grid_zone<<std::endl;
     }
-    
+
     void print_mgrs(mgrs mgrs_in)
     {
         std::cout<<std::fixed<<"MGRS: "<<mgrs_in.grid_zone<<mgrs_in.grid_letter<<" "<<mgrs_in.false_easting<<mgrs_in.false_northing<<" "<<mgrs_in.easting<<" "<<mgrs_in.northing<<std::endl;
@@ -565,7 +596,7 @@ public:
     {
         std::cout<<std::fixed<<"DMS:  "<<lladms_in.latitude_degrees<<" "<<lladms_in.latitude_minutes<<" "<<lladms_in.latitude_seconds<<" "<<lladms_in.longitude_degrees<<" "<<lladms_in.longitude_minutes<<" "<<lladms_in.longitude_seconds<<std::endl;
     }
-    
+
 };
 
-#endif
+#endif //POLARCOORDINATES_UTM_CONVERTER_H
